@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:nitrous/Styles/loginbutton.dart';
@@ -50,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
             : await widget.auth.signIn(_email+"@nitrous.com", _password);
         setState(() {
           _authHint = 'Signed In\n\nUser id: $userId';
-          _counter = prefs.setString("username", "MostafaAshraf").then((bool success) {
+          _counter = prefs.setString("username", _email).then((bool success) {
             print(_email);
             return _email;
           });
@@ -74,18 +75,18 @@ class _LoginPageState extends State<LoginPage> {
     if (validateAndSave()) {
       try {
 
-        FirebaseDatabase database = new FirebaseDatabase();
-        DatabaseReference _userRef=database.reference().child("Users").child(_email);
-
-        _userRef.update(<String, String>{
-
-          "usernam":  _email,
-          "password":  _password,
-
-
-        }).then((_) {
-          print('Transaction  committed.');
+        DocumentReference documentReference = Firestore.instance
+            .collection("Nitrous")
+            .document("Actions")
+            .collection("Actions")
+            .document();
+        documentReference.setData({
+          "name": _email,
+          "image": "https://firebasestorage.googleapis.com/v0/b/nitrous-c7d4f.appspot.com/o/Images%2F80-805068_my-profile-icon-blank-profile-picture-circle-hd.png?alt=media&token=9f6f2461-a225-44f5-a352-4d9fcfdfe36b",
+          "title": "",
+          "password": _password,
         });
+
 
         Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
         Future<String> _counter;
@@ -97,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
 
 
           _authHint = 'Signed In\n\nUser id: $userId';
-          _counter = prefs.setString("username", "MostafaAshraf").then((bool success) {
+          _counter = prefs.setString("username", _email).then((bool success) {
             print(_email);
             return _email;
           });
@@ -107,6 +108,15 @@ class _LoginPageState extends State<LoginPage> {
       catch (e) {
         setState(() {
           _authHint = 'Sign In Error\n\n${e.toString()}';
+          SnackBar(
+            content: Text('Yay! A SnackBar!'),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () {
+                // Some code to undo the change.
+              },
+            ),
+          );
         });
         print(e);
       }
@@ -239,10 +249,16 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        backgroundColor: Colors.blue,
-        body: new SingleChildScrollView(
+      resizeToAvoidBottomInset: false,
+        body: Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage("assets/images/background.png"),
+                  fit: BoxFit.fill)),
+          child: new SingleChildScrollView(
             child: Padding(padding: const EdgeInsets.only(top: 40),
               child: Container(
+
                   padding: const EdgeInsets.all(16.0),
                   child: new Column(
                       children: [
@@ -269,7 +285,7 @@ class _LoginPageState extends State<LoginPage> {
                         hintText()
                       ]
                   )
-              ),))
+              ),)),)
     );
   }
 
