@@ -4,6 +4,7 @@ import 'FirstScreens/loginpage.dart';
 import 'UserScreens/Home.dart';
 
 
+
 class RootPage extends StatefulWidget {
   final BaseAuth auth;
   RootPage({Key key, this.auth}) : super(key: key);
@@ -14,7 +15,8 @@ class RootPage extends StatefulWidget {
 
 enum AuthStatus {
   notSignedIn,
-  signedIn,
+  signedInUser,
+  signedInAdmin,
 }
 
 class _RootPageState extends State<RootPage> {
@@ -26,7 +28,7 @@ class _RootPageState extends State<RootPage> {
     super.initState();
     widget.auth.currentUser().then((userId) {
       setState(() {
-        authStatus = userId != null ? AuthStatus.signedIn : AuthStatus.notSignedIn;
+        authStatus = userId != null ? AuthStatus.signedInUser : AuthStatus.notSignedIn;
       });
     });
   }
@@ -44,13 +46,19 @@ class _RootPageState extends State<RootPage> {
         return new LoginPage(
           title: 'Flutter Login',
           auth: widget.auth,
-          onSignIn: () => _updateAuthStatus(AuthStatus.signedIn),
+          onSignIn: () {
+            _updateAuthStatus(AuthStatus.signedInUser);
+          },
         );
-      case AuthStatus.signedIn:
-        return new HomeUser(
-            auth: widget.auth,
-            onSignOut: () => _updateAuthStatus(AuthStatus.notSignedIn)
+      case AuthStatus.signedInUser:
+        return MaterialApp(
+          home: HomeScreen(
+              auth: widget.auth,
+              onSignOut: () => _updateAuthStatus(AuthStatus.notSignedIn)
+          ),
         );
+      case AuthStatus.signedInAdmin:
+        return null;
     }
   }
 }
